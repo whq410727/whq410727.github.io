@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用 statsmodels 做逻辑回归：从数据到结论 | 王唤卿的博客</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a href="../index.html" class="site-title">王唤卿的博客</a>
+            <nav class="site-nav">
+                <a href="../index.html">首页</a>
+                <a href="../about.html">关于</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <article class="article">
+            <header class="article-header">
+                <h1 class="article-title">用 statsmodels 做逻辑回归：从数据到结论</h1>
+                <div class="article-meta">
+                    <span>2026-10-05</span>
+                    <span>数据分析</span>
+                </div>
+            </header>
+            <div class="article-content">
+                <p>逻辑回归是数据分析中最常用的分类模型之一。本文以一份二分类数据集为例，记录使用 <code>statsmodels</code> 完成逻辑回归分析的完整流程。</p>
+
+                <h2>一、准备工作</h2>
+                <pre><code>import pandas as pd
+import statsmodels.api as sm
+from sklearn.model_selection import train_test_split
+
+# 读取数据
+df = pd.read_csv("data.csv")
+print(df.columns)</code></pre>
+
+                <h2>二、数据预处理</h2>
+                <p>假设因变量为 <code>y</code>（0/1），自变量为若干列。需要注意：</p>
+                <ul>
+                    <li>分类变量需做独热编码（get_dummies）</li>
+                    <li>缺失值需提前处理</li>
+                    <li>statsmodels 不会自动加截距项，需手动添加</li>
+                </ul>
+
+                <pre><code># 划分特征与标签
+X = df.drop("y", axis=1)
+y = df["y"]
+
+# 添加截距项
+X = sm.add_constant(X)
+
+# 划分训练集测试集
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.3, random_state=42
+)</code></pre>
+
+                <h2>三、构建模型</h2>
+                <pre><code>model = sm.Logit(y_train, X_train)
+result = model.fit()
+print(result.summary())</code></pre>
+
+                <h2>四、结果解读</h2>
+                <p><code>summary()</code> 输出中重点关注：</p>
+                <ul>
+                    <li><strong>coef</strong>：回归系数，取指数后为优势比（OR）</li>
+                    <li><strong>P>|z|</strong>：p 值，小于 0.05 表示显著</li>
+                    <li><strong>Pseudo R-squared</strong>：模型拟合优度</li>
+                </ul>
+
+                <pre><code># 计算优势比
+import numpy as np
+odds_ratios = np.exp(result.params)
+print(odds_ratios)</code></pre>
+
+                <h2>五、模型评估</h2>
+                <pre><code>from sklearn.metrics import accuracy_score, roc_auc_score
+
+# 预测
+y_pred = (result.predict(X_test) > 0.5).astype(int)
+y_prob = result.predict(X_test)
+
+print("准确率:", accuracy_score(y_test, y_pred))
+print("AUC:", roc_auc_score(y_test, y_prob))</code></pre>
+
+                <blockquote>经验：AUC 在 0.7-0.8 之间说明模型有一定区分能力，0.8 以上较好。</blockquote>
+
+                <h2>六、结论撰写</h2>
+                <p>报告中需要说明：哪些变量显著、方向如何（正向/负向影响）、优势比的实际含义，以及模型整体表现。</p>
+            </div>
+        </article>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2026 王唤卿 · Powered by GitHub Pages</p>
+        </div>
+    </footer>
+</body>
+</html>

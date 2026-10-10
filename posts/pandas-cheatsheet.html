@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pandas 数据清洗常用操作速查 | 王唤卿的博客</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a href="../index.html" class="site-title">王唤卿的博客</a>
+            <nav class="site-nav">
+                <a href="../index.html">首页</a>
+                <a href="../about.html">关于</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <article class="article">
+            <header class="article-header">
+                <h1 class="article-title">Pandas 数据清洗常用操作速查</h1>
+                <div class="article-meta">
+                    <span>2026-10-10</span>
+                    <span>学习笔记</span>
+                </div>
+            </header>
+            <div class="article-content">
+                <p>在数据分析流程中，数据清洗往往占据 60% 以上的时间。本文整理了我在学习和作业中最常用的 Pandas 操作，方便日后快速查阅。</p>
+
+                <h2>1. 读取与查看数据</h2>
+                <pre><code>import pandas as pd
+
+# 读取 CSV
+df = pd.read_csv("data.csv", encoding="utf-8")
+
+# 查看基本信息
+df.head()          # 前 5 行
+df.info()          # 列名、类型、缺失值
+df.describe()      # 数值列统计
+df.shape           # (行数, 列数)</code></pre>
+
+                <h2>2. 缺失值处理</h2>
+                <pre><code># 查看每列缺失值数量
+df.isnull().sum()
+
+# 删除缺失行
+df = df.dropna()
+
+# 用均值填充
+df["age"] = df["age"].fillna(df["age"].mean())
+
+# 用众数填充（适合分类变量）
+df["city"] = df["city"].fillna(df["city"].mode()[0])</code></pre>
+
+                <h2>3. 数据类型转换</h2>
+                <pre><code># 转数值类型
+df["price"] = pd.to_numeric(df["price"], errors="coerce")
+
+# 转日期类型
+df["date"] = pd.to_datetime(df["date"])
+
+# 提取年月
+df["year"] = df["date"].dt.year
+df["month"] = df["date"].dt.month</code></pre>
+
+                <h2>4. 分组聚合</h2>
+                <pre><code># 按类别分组求均值
+df.groupby("category")["value"].mean()
+
+# 多种聚合方式
+df.groupby("category").agg(
+    avg=("value", "mean"),
+    total=("value", "sum"),
+    count=("value", "count")
+)</code></pre>
+
+                <h2>5. 筛选与排序</h2>
+                <pre><code># 条件筛选
+filtered = df[(df["age"] > 18) & (df["city"] == "北京")]
+
+# 排序
+df = df.sort_values("value", ascending=False)
+
+# 取前 N
+top10 = df.head(10)</code></pre>
+
+                <blockquote>小提示：链式操作时注意加括号或用 <code>.query()</code>，让代码更易读。</blockquote>
+
+                <h2>小结</h2>
+                <p>熟练掌握以上操作足以应对大部分课程作业的数据清洗需求。后续我会继续补充数据合并、透视表等进阶用法。</p>
+            </div>
+        </article>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2026 王唤卿 · Powered by GitHub Pages</p>
+        </div>
+    </footer>
+</body>
+</html>
